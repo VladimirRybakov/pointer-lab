@@ -159,10 +159,6 @@ class App extends Component {
           <img src={logo} className="App-logo" alt="logo" />
         </header>
 
-        <div>
-          Just github test
-        </div>
-
         <div style={{padding: 24, position: 'relative'}}>
           <svg width="320" viewBox="2, 2, 160, 76">
             <path
