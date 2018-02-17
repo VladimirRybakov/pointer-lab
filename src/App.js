@@ -16,12 +16,12 @@ class App extends Component {
       mouse: false,
 
       moves: false,
+      clickDelay: '',
     };
   } 
   
   logEvent = (event, type) => {
     const {logs, moves, events} = this.state;
-    console.log(event);
     
     const pickedOptions = [
       'pointerType', 
@@ -35,7 +35,7 @@ class App extends Component {
       'screenX', 
       'screenY',
       'presure',
-    ]
+    ];
 
     if (
       event.target === this.target && 
@@ -45,6 +45,8 @@ class App extends Component {
         ( event.type !== 'pointermove' && event.type !== 'touchmove' && event.type !== 'mousemove' )
       )
     ) {
+      console.log(event);
+
       logs.unshift({
         key: logs.length, 
         name: event.type,
@@ -63,12 +65,18 @@ class App extends Component {
   }
 
   logTouchEvent = (event) => {
+    if (event.type === 'touchend') {
+      this.delay = Date.now();
+    }
     if (this.state.touch) {
       this.logEvent(event, 'touch');
     }
   }
 
   logMouseEvent = (event) => {
+    if (event.type === 'click') {
+      this.setState({clickDelay: Date.now() - this.delay});
+    }
     if (this.state.mouse) {
       this.logEvent(event, 'mouse')
     }
@@ -86,11 +94,12 @@ class App extends Component {
     [
       'pointerover',
       'pointerenter',
-      'pointerdown',
-      'pointermove',
-      'pointerup',
       'pointerout',
       'pointerleave',
+      
+      'pointerdown',
+      'pointerup',
+      'pointermove',
 
       'pointercancel',
       'gotpointercapture',
@@ -101,20 +110,22 @@ class App extends Component {
       'touchstart',
       'touchend',
       'touchmove',
+
       'touchcancel',
     ].map(e => this.target.addEventListener(e, this.logTouchEvent));
 
     [
-      'click',
-      'dblclick',
-
-      'mousedown',
       'mouseenter',
       'mouseleave',
-      'mousemove',
       'mouseout',
       'mouseover',
+
+      'mousedown',
       'mouseup',
+      'mousemove',
+
+      'click',
+      'dblclick',
     ].map(e => this.target.addEventListener(e, this.logMouseEvent));
   }
 
@@ -158,6 +169,9 @@ class App extends Component {
             Moves
           </button>
 
+          <span>
+            click delay was {this.state.clickDelay || '...'}
+          </span>
 
           { undefined &&
             _.map(
@@ -201,6 +215,10 @@ class App extends Component {
               </div>
             );
           })}
+        </div>
+
+        <div>
+          <a href="http://output.jsbin.com/xiculayadu">http://output.jsbin.com/xiculayadu</a>
         </div>
 
       </div>
