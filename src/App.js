@@ -21,6 +21,9 @@ class App extends Component {
       fingerVisible: false,
       fingerLeft: 0,
       fingerTop: 0,
+
+      capture: true,
+      sliderLeft: 0,      
     };
   }
 
@@ -102,11 +105,29 @@ class App extends Component {
     });
   }
 
+  getSliderLeftPos = (offsetX) => {
+    let leftPos = offsetX - 12;
+    if (leftPos < 0) {
+      leftPos = 0;
+    } else if (leftPos > 320 - 24) {
+      leftPos = 320 - 28;      
+    }
+    return leftPos;
+  }
+
   moveFinger = (e) => {
     this.setState({
       fingerVisible: true,
       fingerLeft: e.offsetX,
       fingerTop: e.offsetY,
+
+      sliderLeft: this.state.capture || e.offsetY < 56 ? this.getSliderLeftPos(e.offsetX) : this.state.sliderLeft
+    });
+  }
+
+  moveSlider = (e) => {
+    this.setState({
+      sliderLeft: this.getSliderLeftPos(e.offsetX)
     });
   }
 
@@ -157,33 +178,67 @@ class App extends Component {
     this.fingerPath.addEventListener('pointerenter', this.showFinger);
     // this.debouncedMoveFinger = _.debounce(this.hideFinger, 100);
     // this.fingerPath.addEventListener('pointermove', this.debouncedMoveFinger);
+
     this.fingerPath.addEventListener('pointermove', this.moveFinger);
     this.fingerPath.addEventListener('pointerleave', this.hideFinger);
+
+    this.slider.addEventListener('pointermove', this.moveSlider);
   }
 
   render() {
     const {logs} = this.state;
 
     return (
-      <div className="App">
+      <div className="App" style={{padding: 24}}>
         { true ? null :
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
           </header>
         }
 
-        <div style={{margin: 24, marginBottom: 600, fontSize: '56px', lineHeight: '56px'}}>
-          Color 
-          <input style={{marginLeft: 20, height: 56, width: 200, fontSize: '56px', lineHeight: '56px'}} type="color" />
-        </div>
+        <div style={{padding: 24, height: 160, position: 'relative'}}>
+          <div 
+            style={{
+              position: 'absolute', 
+              top: 0, 
+              bottom: 0,
 
-        <div style={{padding: 24, position: 'relative'}}>
-          <svg width="320" viewBox="2, 2, 160, 76">
+              width: 320,
+            }}
+          >
+            <div 
+              ref={ref => this.slider = ref}
+              style={{
+                position: 'relative',
+                height: 56, 
+                marginTop: 20, 
+                border: '2px solid grey', 
+                borderRadius: '4px',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: this.state.sliderLeft,
+                  top: 0,
+                  bottom: 0,
+                  width: 24,
+                  backgroundColor: 'black',
+                  borderRadius: '2px',
+                  opacity: 0.90,
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
+          </div>
+
+          <svg width="320" viewBox="2, 2, 160, 76" style={{position: 'absolute', pointerEvents: 'none'}}>
             <path
               ref={ref => this.fingerPath = ref}
               style={{
+                pointerEvents: 'auto',
                 fill: '#00ed00',
-                'fillOpacity': 0.64761909,
+                'fillOpacity': 0.30,
                 stroke: '#070000',
                 'strokeWidth': 1.5,
                 'strokeOpacity': 0.25
@@ -200,10 +255,10 @@ class App extends Component {
                 left: this.state.fingerLeft,
                 width: 36,
                 height: 36,
-                backgroundColor: 'rgba(0, 43, 250, 0.8)',
+                backgroundColor: 'rgba(0, 43, 250, 0.5)',
                 borderRadius: '50%',
                 pointerEvents: 'none',
-                border: '4px solid rgba(0, 0, 0, 0.25)'
+                border: '4px solid rgba(0, 0, 0, 0.12)'
               }}
             >
             </div>
@@ -241,6 +296,13 @@ class App extends Component {
             Moves
           </button>
 
+          <button
+            style={{opacity: this.state.capture ? 1 : 0.3}}
+            onClick={() => this.handleToggle('capture', !this.state.capture)}
+          >
+            Pointer capture
+          </button>
+
           <span>
             click delay was {this.state.clickDelay || '...'}
           </span>
@@ -258,7 +320,6 @@ class App extends Component {
                 />
             )
           }
-
         </div>
 
         <div style={{margin: 24}}>
